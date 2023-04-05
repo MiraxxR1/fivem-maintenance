@@ -83,3 +83,5 @@ RegisterCommand("add_maintenance", function(source, args, rawCommand)
         end
     end
 end, true)
+
+print("^4 fivem-maintenance - By MiraxxR#8801 - https://github.com/MiraxxR1/fivem-maintenance - https://discord.gg/wJmnKQHTWD^0") 
