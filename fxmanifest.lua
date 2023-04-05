@@ -12,5 +12,3 @@ description 'This Lua script for FiveM allows you to set up a maintenance system
 server_scripts {
     "server/sv_maintenance.lua"
 }
-
-print("^1 fivem-maintenance - By MiraxxR#8801 - https://github.com/MiraxxR1/fivem-maintenance - https://discord.gg/wJmnKQHTWD") 
