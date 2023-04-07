@@ -24,7 +24,7 @@ local function LoadMaintenanceData()
     else
         _tbl_playerwhitelisted = {}
     end
-    _print('Loaded maintenance whitelist list')
+    _print('Loaded maintenance whitelist data')
 end
 LoadMaintenanceData()
 
