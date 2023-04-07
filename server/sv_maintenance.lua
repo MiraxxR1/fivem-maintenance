@@ -13,11 +13,11 @@ local maintenanceWhitelist = {
 }
 
 local function _print(text)
-    print("^3Fivem-maintenance:^7 "..text)
+    print("^3Fivem-maintenance:^7 ^4["..os.date('%c').."]^7 "..text)
 end
 
 local _tbl_playerwhitelisted = {}
-Citizen.CreateThread(function()
+local function LoadMaintenanceData()
     _tbl_playerwhitelisted = LoadResourceFile(GetCurrentResourceName(), 'server/sv_data.json')
     if _tbl_playerwhitelisted ~= nil then
         _tbl_playerwhitelisted = json.decode(_tbl_playerwhitelisted)
@@ -25,7 +25,8 @@ Citizen.CreateThread(function()
         _tbl_playerwhitelisted = {}
     end
     _print('Loaded maintenance whitelist list')
-end)
+end
+LoadMaintenanceData()
 
 local function AddPlayerInWhitelist(license)
     table.insert(_tbl_playerwhitelisted, license)
@@ -63,23 +64,32 @@ AddEventHandler("playerConnecting", function(playerName, setKickReason, deferral
     end
 end)
 
-RegisterCommand("maintenance", function(source, args, rawCommand)
+-- Command Usage : maintenance_state(1 or 0)
+RegisterCommand("maintenance_state", function(source, args, rawCommand)
     if source == 0 then
-        if args[1] == "on" then
+        if args[1] == 1 then
             maintenanceMode = true
             _print("The server is currently in maintenance mode")
-        elseif args[1] == "off" then
+        elseif args[1] == 0 then
             maintenanceMode = false
             _print("The server is currently in public mode")
         end
     end
 end, true)
 
+-- Command Usage : add_maintenance(player_license)
 RegisterCommand("add_maintenance", function(source, args, rawCommand)
     if source == 0 then
         if args[1] then
             AddPlayerInWhitelist(args[1])
         end
+    end
+end, true)
+
+-- Command Usage : sync_maintenance
+RegisterCommand("sync_maintenance", function(source, args, rawCommand)
+    if source == 0 then
+        LoadMaintenanceData()
     end
 end, true)
 
