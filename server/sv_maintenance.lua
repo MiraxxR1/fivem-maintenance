@@ -64,8 +64,8 @@ AddEventHandler("playerConnecting", function(playerName, setKickReason, deferral
     end
 end)
 
--- Command Usage : maintenance_state(1 or 0)
-RegisterCommand("maintenance_state", function(source, args, rawCommand)
+-- Command Usage : set_maintenance_state(1 or 0)
+RegisterCommand("set_maintenance_state", function(source, args, rawCommand)
     if source == 0 then
         if args[1] == 1 then
             maintenanceMode = true
