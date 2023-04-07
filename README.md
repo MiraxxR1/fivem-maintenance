@@ -19,8 +19,9 @@ This Lua script for FiveM allows you to set up a maintenance system for your ser
 
 1.Once you download the files, drop files in your server folder and start your server!
 
-### Example of how to use. 
+### Example of how to use.
   ```sh
-  set_maintenance(on or off)
-  add_maintenance(player_license)
+    set_maintenance_state 1
+    add_maintenance player_license
+    sync_maintenance
   ```
