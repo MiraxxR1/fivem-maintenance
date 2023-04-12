@@ -5,42 +5,39 @@
 --- DateTime: 05/04/2023 04:20
 ---
 
-local maintenanceMode = true
-local maintenanceListening = nil -- "json_data" or nil
-local maintenanceDiscord = 'https://discord.gg/wJmnKQHTWD'
-local maintenanceWhitelist = {
-    "license:"
+Maintenance = {}
+Maintenance.Mode = true
+Maintenance.Listening = 'JSON' -- JSON or nil
+Maintenance.DiscordLink = 'https://discord.gg/wJmnKQHTWD'
+Maintenance.DropMessage = 'The server is currently undergoing maintenance. Please try again later. For more information, please visit our Discord server: %s.'
+Maintenance.Whitelisted = {}
+Maintenance.Allowed = {
+    'license:'
 }
 
-local function _print(text)
-    print("^3Fivem-maintenance:^7 ^4["..os.date('%c').."]^7 "..text)
-end
-
-local _tbl_playerwhitelisted = {}
-local function LoadMaintenanceData()
-    _tbl_playerwhitelisted = LoadResourceFile(GetCurrentResourceName(), 'server/sv_data.json')
-    if _tbl_playerwhitelisted ~= nil then
-        _tbl_playerwhitelisted = json.decode(_tbl_playerwhitelisted)
+function Maintenance:LoadMaintenanceData()
+    self.Whitelisted = LoadResourceFile(GetCurrentResourceName(), 'server/sv_whitelist.json')
+    if self.Whitelisted ~= nil then
+        self.Whitelisted = json.decode(self.Whitelisted)
     else
-        _tbl_playerwhitelisted = {}
+        self.Whitelisted = {}
     end
-    _print('Loaded maintenance whitelist data')
-end
-LoadMaintenanceData()
-
-local function AddPlayerInWhitelist(license)
-    table.insert(_tbl_playerwhitelisted, license)
-    local encoded = json.encode(_tbl_playerwhitelisted)
-    SaveResourceFile(GetCurrentResourceName(), 'server/sv_data.json', encoded, -1)
-    _print('Added ['..license..'] to the maintenance whitelist list')
+    self:Print('Loaded maintenance whitelist data')
 end
 
-local function isPlayerWhitelisted(identifier)
-    local _tbl_data = {}
-    if maintenanceListening == "json_data" then _tbl_data = _tbl_playerwhitelisted else _tbl_data = maintenanceWhitelist end
-    for _, v in ipairs(_tbl_data) do
+function Maintenance:AddPlayerInWhitelist(license)
+    table.insert(self.Whitelisted, license)
+    local encoded = json.encode(self.Whitelisted)
+    SaveResourceFile(GetCurrentResourceName(), 'server/sv_whitelist.json', encoded, -1)
+    self:Print('Added ['..license..'] to the maintenance whitelist')
+end
+
+function Maintenance:isPlayerWhitelisted(identifier, playerName)
+    local _tbl = {}
+    if self.Listening == 'JSON' then _tbl = self.Whitelisted else _tbl = self.Allowed end
+    for k, v in ipairs(_tbl) do
         if v == identifier then
-            return true
+            return true, self:Print('Allowed connection: ^3' .. playerName .. '^7')
         end
     end
     return false
@@ -55,33 +52,40 @@ local function GetPlayerLicense(id)
     end
 end
 
+function Maintenance:Print(text)
+    print("^3Fivem-maintenance:^7 ^4["..os.date('%c').."]^7 "..text)
+end
+
 AddEventHandler("playerConnecting", function(playerName, setKickReason, deferrals)
     local _source <const> = source
     local _license <const> = GetPlayerLicense(_source)
-    if maintenanceMode and not isPlayerWhitelisted(_license) then
+
+    Maintenance:Print('Connecting: ^3' .. playerName .. '^7')
+    if Maintenance.Mode and not Maintenance:isPlayerWhitelisted(_license, playerName) then
         deferrals.defer()
-        deferrals.done(string.format("The server is currently undergoing maintenance. Please try again later. For more information, please visit our Discord server: %s.", maintenanceDiscord))
+        deferrals.done(string.format(Maintenance.DropMessage, Maintenance.DiscordLink))
+        Maintenance:Print('Dropping: ^3' .. playerName .. '^7, Reason: ^3Not Whitelisted^7')
     end
 end)
 
--- Command Usage : set_maintenance_state(1 or 0)
+-- Command Usage : /set_maintenance_state [boolean]
 RegisterCommand("set_maintenance_state", function(source, args, rawCommand)
     if source == 0 then
         if args[1] == 1 then
-            maintenanceMode = true
-            _print("The server is currently in maintenance mode")
+            Maintenance.Mode = true
+            Maintenance:Print("The server is currently in maintenance mode")
         elseif args[1] == 0 then
-            maintenanceMode = false
-            _print("The server is currently in public mode")
+            Maintenance.Mode = false
+            Maintenance:Print("The server is currently in public mode")
         end
     end
 end, true)
 
--- Command Usage : add_maintenance(player_license)
+-- Command Usage : /add_maintenance [player_license]
 RegisterCommand("add_maintenance", function(source, args, rawCommand)
     if source == 0 then
         if args[1] then
-            AddPlayerInWhitelist(args[1])
+            Maintenance:AddPlayerInWhitelist(args[1])
         end
     end
 end, true)
@@ -89,8 +93,9 @@ end, true)
 -- Command Usage : sync_maintenance
 RegisterCommand("sync_maintenance", function(source, args, rawCommand)
     if source == 0 then
-        LoadMaintenanceData()
+        Maintenance:LoadMaintenanceData()
     end
 end, true)
 
-print("^4 fivem-maintenance - By MiraxxR#8801 - https://github.com/MiraxxR1/fivem-maintenance - https://discord.gg/wJmnKQHTWD^0") 
+Citizen.CreateThread(function() Maintenance:LoadMaintenanceData() end)
+print("^4 fivem-maintenance - By MiraxxR#8801 - https://github.com/MiraxxR1/fivem-maintenance - https://discord.gg/wJmnKQHTWD^0")
