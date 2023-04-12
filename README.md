@@ -6,6 +6,8 @@
     This Lua script for FiveM allows you to set up a maintenance system for your server. Fully Standalone & Plug And Play.
     <br />
     <a href="https://discord.gg/wJmnKQHTWD">Discord Support</a>
+    .
+    <a href="https://discord.gg/wJmnKQHTWD">Cfx.re FiveM Forum</a>
   </p>
 </div>
 
